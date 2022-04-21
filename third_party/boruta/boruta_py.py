@@ -358,22 +358,18 @@ class BorutaPy(BaseEstimator, TransformerMixin):
         except AttributeError:
             raise ValueError('You need to call the fit(X, y) method first.')
 
-        if weak:
-            X = X[:, self.support_ + self.support_weak_]
-        else:
-            X = X[:, self.support_]
+        X = X[:, self.support_ + self.support_weak_] if weak else X[:, self.support_]
         return X
 
     def _get_tree_num(self, n_feat):
         depth = self.estimator.get_params()['max_depth']
-        if depth == None:
+        if depth is None:
             depth = 10
         # how many times a feature should be considered on average
         f_repr = 100
         # n_feat * 2 because the training matrix is extended with n shadow features
         multi = ((n_feat * 2) / (np.sqrt(n_feat * 2) * depth))
-        n_estimators = int(multi * f_repr)
-        return n_estimators
+        return int(multi * f_repr)
 
     def _get_imp(self, X, y):
         try:
@@ -517,7 +513,7 @@ class BorutaPy(BaseEstimator, TransformerMixin):
             raise ValueError('Alpha should be between 0 and 1.')
 
     def _print_results(self, dec_reg, _iter, flag):
-        n_iter = str(_iter) + ' / ' + str(self.max_iter)
+        n_iter = f'{str(_iter)} / {str(self.max_iter)}'
         n_confirmed = np.where(dec_reg == 1)[0].shape[0]
         n_rejected = np.where(dec_reg == -1)[0].shape[0]
         cols = ['Iteration: ', 'Confirmed: ', 'Tentative: ', 'Rejected: ']
